@@ -62,7 +62,8 @@ def _collect(cfg: dict, tracker: Any) -> SourceResult:
             raw_related = _serpapi_related_all(tcfg["related_queries_for"], cfg, tracker)
             source = "serpapi"
         dates, series = _parse_timeseries(raw_ts, terms)
-        related = {t: _parse_related(r, tcfg["rising_per_term"]) for t, r in raw_related.items()}
+        keep = tcfg["terms"] + [c["name"] for c in cfg["ads"]["competitors"]]   # derived from the data setup
+        related = {t: _parse_related(r, tcfg["rising_per_term"], keep) for t, r in raw_related.items()}
         result = _build_result(cfg, terms, dates, series, related, source)
         result.synthetic = bool(raw_ts.get("_synthetic"))
         log.info(f"[trends] {result.status.upper()} via {source}, {len(terms)} terms, {len(dates)} days")
@@ -156,9 +157,10 @@ def _parse_timeseries(raw: dict, terms: list[str]) -> tuple[list[str], dict[str,
         raise ValueError("SerpApi returned no complete time-series points")
     return dates, series
 
+
 def _parse_related(raw: dict, limit: int, keep_words: list[str] | None = None) -> dict:
-    """Rising queries, kept only if they contain one of our search terms or a competitor name:
-    rising queries often include unrelated spikes (football clubs, cars)."""
+    """Rising queries, filtered to snack-related ones: rising queries for a word like شيبس often include
+    unrelated spikes (football clubs, cars), so only queries containing a word from `keep_words` are kept."""
     if raw.get("_error"):
         return {"status": "gap", "reason": raw["_error"], "items": []}
     rising = (raw.get("related_queries") or {}).get("rising") or []
@@ -202,13 +204,41 @@ def _term_summary(dates: list[str], values: list[str], min_points: int, min_avg:
         return {**base, "status": "insufficient data",
                 "reason": f"interest too low for a meaningful change (weekly averages {b} → {a})"}
     peak_val, peak_date = max(numeric_all, key=lambda x: x[0])
-    peak_val, peak_date = max(numeric_all, key=lambda x: x[0])
     return {**base, "status": "ok",
             "last_7d_avg": a, "prev_7d_avg": b,
             "wow_change_points": round(a - b, 1),
             "wow_change_pct": round((a - b) / b * 100) if b > 0 else None,
             "avg_90d": round(mean(n for n, _ in numeric_all), 1),
             "peak_value": peak_val, "peak_date": peak_date}
+
+
+def _span(a: str, b: str) -> str:
+    """'2026-10-10', '2026-10-16' -> '10–16 Oct'  /  '2026-07-19', '2026-10-16' -> '19 Jul – 16 Oct'."""
+    x, y = datetime.strptime(a, "%Y-%m-%d"), datetime.strptime(b, "%Y-%m-%d")
+    return f"{x.day}–{y.day} {y:%b}" if x.month == y.month else f"{x.day} {x:%b} – {y.day} {y:%b}"
+
+
+def _candidates(summary: dict, related: dict, period_label: str) -> list[dict]:
+    """Ground-truth trend facts, written by code from the numbers (the AI only picks and interprets).
+    Order: biggest week-over-week moves first, then snack-related rising queries."""
+    weekly = [(t, s) for t, s in summary.items() if s.get("status") == "ok" and s.get("wow_change_pct") is not None]
+    weekly.sort(key=lambda x: abs(x[1]["wow_change_pct"]), reverse=True)
+    out: list[dict] = []
+    for t, s in weekly:
+        pct = s["wow_change_pct"]
+        out.append({"kind": "weekly_change", "term": t,
+                    "values": [s["last_7d_avg"], s["prev_7d_avg"], pct],
+                    "period": f"{_span(*s['last_7d'].split(' → '))} vs {_span(*s['prev_7d'].split(' → '))}",
+                    "fact": f"Relative interest averaged {s['last_7d_avg']} in the last 7 days vs "
+                            f"{s['prev_7d_avg']} the week before ({pct:+d}%)."})
+    for t, r in related.items():
+        for item in r.get("items", []) if r.get("status") == "ok" else []:
+            out.append({"kind": "rising_query", "term": t, "query": item["query"], "values": [item["value"]],
+                        "period": period_label,
+                        "fact": f"Rising related search: «{item['query']}» ({item['value']})."})
+    for i, c in enumerate(out, 1):
+        c["id"] = f"C{i}"
+    return out
 
 
 def _build_result(cfg: dict, terms: list[str], dates: list[str], series: dict[str, list[str]],
@@ -229,6 +259,7 @@ def _build_result(cfg: dict, terms: list[str], dates: list[str], series: dict[st
         period=period,
         data={"terms": terms, "main_term": tcfg["main_term"], "dates": dates, "series": series,
               "summary": summary, "related_rising": related,
+              "candidates": _candidates(summary, related, _span(dates[0], dates[-1])),
               "trends_url": trends_explore_url(terms, cfg["geo"], tcfg["date_range"]),
               "scale_note": "Relative interest (0–100), not search volumes"},
     )
@@ -246,8 +277,8 @@ def _from_manual_csv(cfg: dict, terms: list[str], primary_error: str) -> SourceR
         csv_terms = [t for t in terms if any(r["term"] == t for r in rows)] or sorted({r["term"] for r in rows})[:5]
         lookup = {(r["date"], r["term"]): r["value"] for r in rows}
         series = {t: [lookup.get((d, t), "") for d in dates] for t in csv_terms}
-        keep = tcfg["terms"] + [c["name"] for c in cfg["ads"]["competitors"]]   # derived from the data setup
-        related = {t: _parse_related(r, tcfg["rising_per_term"], keep) for t, r in raw_related.items()}
+        related = {t: {"status": "gap", "reason": "not available from manual CSV", "items": []}
+                   for t in cfg["trends"]["related_queries_for"] if t in csv_terms}
         res = _build_result(cfg, csv_terms, dates, series, related, "manual_csv",
                             extra_reason=f"SerpApi failed ({primary_error}); used manual_inputs/trends.csv")
         log.info(f"[trends] PARTIAL via manual CSV, {len(csv_terms)} terms")

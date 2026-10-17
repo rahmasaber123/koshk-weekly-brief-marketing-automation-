@@ -135,7 +135,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
       </div>
     {% endfor %}
     </div>
-      {% if ads.reason %}<div class="note">{{ ads.reason|ar }}.</div>{% endif %}
+    {% if ads.reason %}<div class="note">{{ ads.reason|ar }}.</div>{% endif %}
   {% endif %}
 </section>
 
@@ -157,7 +157,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
     <div class="findings">
       {% for f in trends.findings %}
       <div class="finding{% if f.greyed %} greyed{% endif %}">
-        <p><span class="fid">{{ f.finding_id }}</span><bdi lang="ar">{{ f.term }}</bdi> · {{ f.fact|ar }}</p>
+        <p><span class="fid">{{ f.finding_id }}</span><bdi lang="ar">{{ f.term }}</bdi> · {{ f.fact|ar }} <span class="tag">{{ f.period|ar }}</span></p>
         {% if f.greyed %}{% elif f.interpretation %}<p><span class="so">So what:</span> {{ f.interpretation|ar }}</p>
         {% else %}<p class="unavailable"><span class="so">So what:</span> unavailable (AI step failed)</p>{% endif %}
       </div>

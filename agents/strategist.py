@@ -10,10 +10,16 @@ SYSTEM_PROMPT = """You are the Content Strategist for Koshk, a fictional Egyptia
 Chipsy, Doritos and Lion. You receive this week's VALIDATED competitor ads (IDs like "A3") and Google Trends
 findings (IDs like "F2"). Propose up to 3 social content ideas for Koshk.
 
+Ground truth vs opinion: `ad_text`, `fact` and `values` are collected data (ground truth). `interpretation`
+is an analyst's opinion — use it as a hint, but build each idea on the ground truth it cites.
+
 Rules:
 - Every idea must use at least one of the provided IDs in `based_on`, copied exactly. Use only IDs that exist.
-- Fewer ads/findings means fewer ideas. With no evidence, return no ideas and explain in `note`.
+- Return 3 ideas whenever the evidence supports 3, and spread them across ads AND trend findings (at least
+  one idea should cite a trend finding "F#" when findings exist). Fewer only if the evidence is too thin.
 - These are CONTENT ideas (posts), not product, packaging or pricing advice.
+- Never adopt a competitor's theme for Koshk: if a competitor's ad is about heritage, local sourcing or
+  premium quality, Koshk's idea must take a different angle (moment, mood, audience), not the same theme.
 - Differentiate Koshk from competitors — react to what they do, never copy their ads or slogans, and never
   name Chipsy, Doritos or Lion in Koshk's post (title or hook). Competitors are context, not the topic.
 - Koshk is fictional and new: NEVER mention or imply any Koshk flavour, new product, price, pack size, offer,
@@ -37,10 +43,12 @@ Rules:
 
 
 def build_payload(valid_ads: list[dict], valid_findings: list[dict], gaps: list[str]) -> dict:
-    ads = [{k: a.get(k) for k in ("id", "competitor", "page_name", "start_date", "message_fact", "interpretation")}
+    ads = [{"id": a["id"], "competitor": a.get("competitor"), "page_name": a.get("page_name"),
+            "start_date": a.get("start_date"), "ad_text": (a.get("ad_text") or "")[:400],   # ground truth
+            "message_fact": a.get("message_fact"), "interpretation": a.get("interpretation")}
            for a in valid_ads]
-    findings = [{k: f.get(k) for k in ("finding_id", "term", "values", "period", "fact", "interpretation")}
-                for f in valid_findings if not f.get("insufficient_data")]
+    findings = [{k: f.get(k) for k in ("finding_id", "term", "fact", "values", "period", "interpretation")}
+                for f in valid_findings if not f.get("greyed")]
     return {"brand": "Koshk (fictional Egyptian snack brand; no known flavours, prices or promotions)",
             "market": "Egypt", "ads": ads, "findings": findings, "data_gaps_this_week": gaps}
 

@@ -1,30 +1,28 @@
-# Koshk Weekly Brief: how it works (draft write-up)
+# Koshk Weekly Brief: write-up
 
-> Fill the `[FILL]` values from `output/run_log.json` → `cost` and from `python cost.py` after your first real runs.
+**How it works.** A GitHub Actions schedule runs every Monday at 09:00 Cairo. It can also be started by hand. Python collectors gather the facts:
+- **Ads:** active ads in Egypt from the Meta Ad Library, via Apify. Only ads from the brands' official pages are kept: PepsiCo Egypt for Chipsy/Doritos, and LionEG. Images are saved at collection time.
+- **Trends:** Google Trends for Egypt via SerpApi: five Arabic terms over 90 days, plus rising related queries. Unrelated rising queries are filtered out.
 
-**How it works.** A GitHub Actions cron job runs every Monday at 06:00 UTC (09:00 Cairo). It can also be started by hand. Plain Python collectors gather the facts:
-- **Ads:** active ads in Egypt for Chipsy, Doritos and Lion from the Meta Ad Library, via the Apify actor `apify/facebook-ads-scraper`. Images are downloaded at collection time.
-- **Trends:** Google Trends for Egypt via SerpApi. Five Arabic terms over the past 90 days, plus rising related queries. Week-over-week change is computed in code.
+Code then computes week-over-week changes and **writes every trend fact**. Three AI agents (PydanticAI, gpt-4o, temperature 0.2) only choose and interpret: which ads matter, which facts matter, and three content ideas that must cite an ad (A#) or finding (F#). A validator drops anything not backed by the data and logs it. The brief separates **facts** from **"So what:"** interpretation, shows source links, collection date, geo (EG) and each finding's date window, and notes that Trends scores are relative interest, not volumes.
 
-Three PydanticAI agents (gpt-4o-mini, temperature 0.2, typed outputs) then add judgement only: which ads matter, which trend movements matter, and three content ideas. `validate.py` checks every agent output against the raw data and drops any invented ID, number or unsupported idea, logging each drop. The brief is rendered to a one-page HTML and PDF, emailed via Gmail, and saved as a GitHub artifact. Facts and interpretation are visually separated ("So what:"), and a one-line footer lists sources, filters and periods. Source status and cost stay in `run_log.json`, out of the CEO's view.
+**Manual:** choosing competitors, official pages and search terms; reviewing ideas before posting; optional manual CSVs if a source is down for weeks.
 
-**What remains manual.** Choosing competitors and search terms; checking prices in `config.yaml`; reviewing the ideas before posting (audience and timing are suggestions); filling `manual_inputs/*.csv` if a source is down for a long time.
+**Monthly cost (actual, from `run_log.json`, run of 18 Oct 2026).** Per run:
+- Apify: ≈$0.12 for 20 ads, within the free plan's monthly credit
+- SerpApi: 3 searches, $0 on the free plan (≈250 searches/month; 244 left)
+- OpenAI gpt-4o: ≈6k tokens ≈ $0.02 (paid; no free tier)
 
-**Monthly cost (actual).** Average per run: $[FILL] over [FILL] runs, so about $[FILL]/month at 4.33 runs. Per run, from `run_log.json`:
-- Apify: $[FILL] for [FILL] ads (free plan, $5.80 per 1,000 ads; plan credit covers it)
-- SerpApi: [FILL] searches, $0 within the free plan, [FILL] left
-- OpenAI: [FILL]k tokens, $[FILL]
+That's ≈$0.14 per run, or **≈$0.60/month** at 4.33 runs. GitHub Actions uses about 2 minutes per run (free).
 
-Assumptions: 20 ads per brand, 3 SerpApi searches per run, weekly cadence. During development, raw API responses were saved to `fixtures/` and reused (`USE_FIXTURES=1`), so building and testing the agents, chart and template didn't repeat API costs.
+**What could break → how it's handled**
+- **Meta Ad Library:** Meta's official API only covers EU commercial ads, so a scraper is used. If the scraper breaks, Meta changes its page or credit runs out: retry ×2 → manual CSV → the ads section is marked as a gap with an Ad Library link, and the rest of the brief continues.
+- **SerpApi quota or outage:** retry → manual CSV → gap. Low-data terms are greyed out ("not enough search data").
+- **LLM down or returns invalid output:** code facts still render, and ideas are marked unavailable. If the AI cites invented IDs or numbers, or names a competitor in a post idea, the model is asked to fix it and then the item is dropped. Every drop is logged.
+- **Email fails:** the brief is still saved as an artifact.
+- **Schedule:** GitHub cron can start late, and is paused after 60 days of repo inactivity. The weekly cost commit keeps it active. Ubuntu is pinned to 24.04.
+- **Data reality:** Doritos had no active Egypt ads during collection. The brief says so instead of padding. Isolated zero days in Trends are Google sampling gaps.
 
-**What could break and how it's handled.**
-- Google Trends occasionally returns 0 for a single day (sampling gap); the chart shows raw data as-is.
-- **Meta's official Ad Library API** only returns commercial ads for the EU, so a scraper is used. If the scraper fails, Apify runs out of credit, or Meta changes its page: retry 2× → `manual_inputs/ads.csv` → the ads section is marked as a gap with the reason and a ready Ad Library link (Egypt, active).
-- **No relevant ads:** the brief says so and never pads to three.
-- **SerpApi down or quota used up:** retry → manual CSV → gap. Thin terms are greyed out as "insufficient data".
-- **LLM down or invalid output:** retry once. Facts still render from code (ad text, week-over-week numbers), and the ideas section is marked unavailable.
-- **Invented IDs or numbers:** dropped by `validate.py` and logged.
-- **Email failure:** the brief is still saved to `output/` and the artifact.
-- **Missing cost fields:** logged as "unknown", never a crash.
-- **Schedule delays:** GitHub can start cron runs late at busy times. The brief shows the actual collection time.
-- **Inactivity pause:** GitHub pauses schedules after 60 days without repo activity. The weekly cost-history commit keeps the repo active.
+**Reference video:** [watched / not watched — one line on what was adopted or rejected and why].
+
+**Time:** core pipeline ≈ [X] h; extra time went on data-quality fixes (unofficial advertisers in keyword results, noisy rising queries, Windows setup).

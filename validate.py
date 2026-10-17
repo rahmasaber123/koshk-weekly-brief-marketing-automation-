@@ -57,69 +57,22 @@ def validate_ads(analysis: AdsAnalysis, raw_ads: list[dict], drops: list[dict], 
 
 # ---------------- trends ----------------
 
-def _allowed_for_term(term: str, data: dict) -> tuple[set[float], set[str]]:
-    nums: set[float] = set()
-    strs: set[str] = set()
-
-    def walk(v: Any) -> None:
-        if isinstance(v, bool) or v is None:
-            return
-        if isinstance(v, (int, float)):
-            nums.add(float(v))
-        elif isinstance(v, str):
-            strs.add(v.strip())
-            nums.update(_nums_in(v))         # e.g. "+250%" -> 250, dates -> their parts
-        elif isinstance(v, dict):
-            for x in v.values():
-                walk(x)
-        elif isinstance(v, list):
-            for x in v:
-                walk(x)
-
-    # Only what the agent was shown for this term (not the raw daily series — too permissive a match set).
-    walk((data.get("summary") or {}).get(term))
-    walk((data.get("related_rising") or {}).get(term))
-    return nums, strs
-
-
-def _value_ok(v: float | str, nums: set[float], strs: set[str]) -> bool:
-    if isinstance(v, (int, float)):
-        return _num_ok(float(v), nums)
-    s = str(v).strip()
-    if s in strs:
-        return True
-    found = _nums_in(s)                      # "+9%", "9 %", "-4" -> 9 / 4
-    return bool(found) and all(_num_ok(n, nums) for n in found)
-
-
 def validate_findings(analysis: TrendsAnalysis, trends_data: dict, drops: list[dict],
                       max_n: int = 3) -> list[dict]:
-    """Drops findings with unknown terms or any value/number not in the raw data. Renumbers F1..Fn."""
-    summary = trends_data.get("summary") or {}
-    related = trends_data.get("related_rising") or {}
+    """Findings are code-written candidate facts picked by ID; the agent only adds the interpretation.
+    Drops unknown/duplicate IDs and interpretations that contain numbers. Renumbers F1..Fn."""
+    by_id = {c["id"]: c for c in trends_data.get("candidates") or []}
     out: list[dict] = []
-    for f in analysis.findings:
-        fid = f.finding_id
-        if f.term not in summary and f.term not in related:
-            _drop(drops, "finding", fid, f"term '{f.term}' not in collected data")
-            continue
-        if f.insufficient_data:
-            if (summary.get(f.term) or {}).get("status") == "ok":
-                _drop(drops, "finding", fid, f"marked insufficient but '{f.term}' has data")
-                continue
-            out.append({**f.model_dump(), "values": [], "greyed": True})
-            continue
-        nums, strs = _allowed_for_term(f.term, trends_data)
-        bad_vals = [v for v in f.values if not _value_ok(v, nums, strs)]
-        bad_text = [n for n in _nums_in(f.fact + " " + f.interpretation) if not _num_ok(n, nums)]
-        if not f.values:
-            _drop(drops, "finding", fid, "no values copied from data")
-        elif bad_vals or bad_text:
-            _drop(drops, "finding", fid, f"values not in raw data: {bad_vals + bad_text}")
-        elif any(o["term"] == f.term and o["fact"] == f.fact for o in out):
-            _drop(drops, "finding", fid, "duplicate finding")
+    for p in analysis.findings:
+        c = by_id.get(p.candidate_id)
+        if c is None:
+            _drop(drops, "finding", p.candidate_id, "candidate_id not in collected data")
+        elif any(o["candidate_id"] == c["id"] for o in out):
+            _drop(drops, "finding", p.candidate_id, "duplicate candidate")
+        elif _nums_in(p.interpretation):
+            _drop(drops, "finding", p.candidate_id, f"interpretation adds numbers: {_nums_in(p.interpretation)}")
         else:
-            out.append({**f.model_dump(), "greyed": False})
+            out.append({**c, "candidate_id": c["id"], "interpretation": p.interpretation, "greyed": False})
     out = out[:max_n]
     for i, f in enumerate(out, 1):
         f["finding_id"] = f"F{i}"
@@ -191,7 +144,7 @@ def validate_ideas(plan: ContentPlan, valid_ids: set[str], drops: list[dict], ma
 # ---------------- code-only fallbacks (LLM down) ----------------
 
 def code_ads_facts(raw_ads: list[dict], max_n: int = 3) -> list[dict]:
-    """Most recent ad per competitor whose page name contains the brand name. Facts only, no interpretation."""
+    """Most recent ad per competitor. Facts only, no interpretation."""
     picked: list[dict] = []
     for a in sorted(raw_ads, key=lambda x: x.get("start_date", ""), reverse=True):
         if all(p["competitor"] != a["competitor"] for p in picked):   # collector already kept official pages only
@@ -202,22 +155,11 @@ def code_ads_facts(raw_ads: list[dict], max_n: int = 3) -> list[dict]:
 
 
 def code_trend_findings(trends_data: dict, max_n: int = 3) -> list[dict]:
-    """Largest week-over-week changes, then the top rising query. Templated facts, no interpretation."""
-    out: list[dict] = []
-    ok = [(t, s) for t, s in (trends_data.get("summary") or {}).items()
-          if s.get("status") == "ok" and s.get("wow_change_pct") is not None]
-    for t, s in sorted(ok, key=lambda x: abs(x[1]["wow_change_pct"]), reverse=True)[:2]:
-        out.append({"term": t, "values": [s["last_7d_avg"], s["prev_7d_avg"], s["wow_change_pct"]],
-                    "period": f"{s['last_7d']} vs {s['prev_7d']}", "greyed": False, "interpretation": None,
-                    "fact": f"Relative interest in {t} averaged {s['last_7d_avg']} in the last 7 days vs "
-                            f"{s['prev_7d_avg']} the week before ({s['wow_change_pct']:+d}%)."})
-    for t, r in (trends_data.get("related_rising") or {}).items():
-        if r.get("status") == "ok" and r["items"] and len(out) < max_n:
-            q = r["items"][0]
-            out.append({"term": t, "values": [q["value"]], "period": "Past 90 days", "greyed": False,
-                        "interpretation": None,
-                        "fact": f"Top rising query related to {t} is {q['query']} ({q['value']})."})
-            break
-    for i, f in enumerate(out[:max_n], 1):
+    """AI down: top 2 weekly changes + top rising query, straight from the code-written candidates."""
+    cands = trends_data.get("candidates") or []
+    weekly = [c for c in cands if c["kind"] == "weekly_change"][:2]
+    rising = [c for c in cands if c["kind"] == "rising_query"][:1]
+    out = [{**c, "candidate_id": c["id"], "interpretation": None, "greyed": False} for c in (weekly + rising)[:max_n]]
+    for i, f in enumerate(out, 1):
         f["finding_id"] = f"F{i}"
-    return out[:max_n]
+    return out

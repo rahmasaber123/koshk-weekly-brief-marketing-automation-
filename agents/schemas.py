@@ -36,21 +36,13 @@ class AdsAnalysis(BaseModel):
 
 # ---------- Agent 2: Trends Analyst ----------
 
-class TrendFinding(BaseModel):
-    finding_id: str = Field(description="F1, F2 or F3.")
-    term: str = Field(description="Search term exactly as in the input data.")
-    values: list[float | str] = Field(
-        default_factory=list,
-        description="Exact values copied from the input (e.g. 34, 51, 'Breakout', '<1'). Never computed or rounded.",
-    )
-    period: str = Field(description="Dates the values cover, as given in the input.")
-    fact: str = Field(description="FACT: what the data shows. One line, no opinion.")
-    interpretation: str = Field(description="INTERPRETATION: the 'so what' for Koshk. One line.")
-    insufficient_data: bool = False
+class TrendPick(BaseModel):
+    candidate_id: str = Field(description="ID of a candidate fact from the input, e.g. 'C2'. Must exist.")
+    interpretation: str = Field(description="INTERPRETATION: the 'so what' for Koshk's content. One line.")
 
 
 class TrendsAnalysis(BaseModel):
-    findings: list[TrendFinding] = Field(default_factory=list, max_length=3)
+    findings: list[TrendPick] = Field(default_factory=list, max_length=3)
     note: str | None = None
 
 
