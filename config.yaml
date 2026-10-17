@@ -34,13 +34,14 @@ trends:
   date_range: "today 3-m"        # Google Trends "past 90 days" (daily points)
   period_label: "Past 90 days"
   main_term: "شيبسي"             # drawn in yellow on the chart
-  chart_terms: ["شيبسي", "دوريتوس", "شيبس ليون"]   # chart shows the 3 competitors only
-  terms:                          # max 5 (one TIMESERIES call)
-    - "شيبس"
+  chart_terms: ["شيبسي", "chipsy", "دوريتوس", "doritos"]   # brands in Arabic + Latin spelling (Egyptians search both)
+  terms:                          # max 5 (one TIMESERIES call); shared 0–100 scale
+    - "شيبس"                      # category term (also feeds rising queries)
     - "شيبسي"
+    - "chipsy"
     - "دوريتوس"
-    - "شيبس ليون"                 # "ليون" alone mostly means Lyon (city / football club)
-    - "سناكس"
+    - "doritos"
+    # Lion: no distinctive search term ("ليون"/"lion" mostly = Lyon or the animal) -> tracked via ads only
   related_queries_for:            # one RELATED_QUERIES call each (each = 1 SerpApi search)
     - "شيبس"
     - "شيبسي"

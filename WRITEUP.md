@@ -21,7 +21,7 @@ That's ≈$0.14 per run, or **≈$0.60/month** at 4.33 runs. GitHub Actions uses
 - **LLM down or returns invalid output:** code facts still render, and ideas are marked unavailable. If the AI cites invented IDs or numbers, or names a competitor in a post idea, the model is asked to fix it and then the item is dropped. Every drop is logged.
 - **Email fails:** the brief is still saved as an artifact.
 - **Schedule:** GitHub cron can start late, and is paused after 60 days of repo inactivity. The weekly cost commit keeps it active. Ubuntu is pinned to 24.04.
-- **Data reality:** Doritos had no active Egypt ads during collection. The brief says so instead of padding. Isolated zero days in Trends are Google sampling gaps.
+- **Data reality:** Doritos had no active Egypt ads during collection. The brief says so instead of padding. Isolated zero days in Trends are Google sampling gaps. Lion has no distinctive search term ("ليون"/"lion" mostly mean Lyon or the animal), so it is tracked through ads only; Chipsy and Doritos are tracked in both Arabic and Latin spelling.
 
 **Reference video:** [watched / not watched — one line on what was adopted or rejected and why].
 
