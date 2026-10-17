@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.venv/
+output/*
+!output/.gitkeep
+
+fixtures/*
+!fixtures/.gitkeep
+tests/

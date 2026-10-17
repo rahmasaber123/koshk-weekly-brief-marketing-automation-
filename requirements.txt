@@ -1,0 +1,13 @@
+# Pinned to the versions this was built and tested with.
+pydantic==2.13.5
+pydantic-ai-slim[openai]==2.57.0
+requests>=2.31,<3
+PyYAML>=6.0,<7
+python-dotenv>=1.0,<2
+Jinja2>=3.1,<4
+weasyprint==70.0
+matplotlib==3.11.2          # >=3.11 shapes Arabic natively; charts.py falls back to reshaper+bidi on older
+arabic-reshaper==3.0.1
+python-bidi==0.6.11
+Pillow>=10                  # only for tests/make_sample_fixtures.py (already a matplotlib dependency)
+tzdata>=2024.1

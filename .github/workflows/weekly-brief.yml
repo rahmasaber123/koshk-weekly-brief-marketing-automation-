@@ -1,0 +1,77 @@
+name: Koshk weekly brief
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"          # Monday 06:00 UTC = 09:00 Cairo. GitHub may start scheduled runs late.
+  workflow_dispatch:
+    inputs:
+      simulate_fail:
+        description: "Demo failure handling"
+        type: choice
+        options: ["", "ads", "trends", "llm"]
+        default: ""
+      use_fixtures:
+        description: "Use saved fixtures instead of calling Apify/SerpApi ('' | 1 | sample)"
+        type: choice
+        options: ["", "1", "sample"]
+        default: ""
+
+permissions:
+  contents: write                 # only to commit output/cost_history.csv back to the repo
+
+concurrency:
+  group: weekly-brief
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: System deps (WeasyPrint + Arabic fonts)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 \
+            fonts-noto-core fonts-hosny-amiri
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Generate brief
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          BRIEF_RECIPIENTS: ${{ secrets.BRIEF_RECIPIENTS }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: "587"
+          SIMULATE_FAIL: ${{ inputs.simulate_fail }}
+          USE_FIXTURES: ${{ inputs.use_fixtures }}
+        run: python main.py
+
+      - name: Upload brief
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: koshk-brief-${{ github.run_number }}
+          path: output/
+          retention-days: 90
+
+      - name: Keep cost history (and keep the schedule alive)
+        if: always() && inputs.use_fixtures == '' && inputs.simulate_fail == ''
+        run: |
+          [ -f output/cost_history.csv ] || exit 0
+          git config user.name "koshk-brief-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f output/cost_history.csv
+          git diff --cached --quiet || git commit -m "cost history: run ${{ github.run_number }}"
+          git push || echo "push failed (cost history stays in the artifact)"

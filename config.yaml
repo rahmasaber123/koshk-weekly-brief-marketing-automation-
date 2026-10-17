@@ -1,0 +1,67 @@
+geo: EG
+timezone: Africa/Cairo
+
+# --- Meta Ad Library (via Apify actor apify/facebook-ads-scraper) ---
+ads:
+  actor_id: "apify~facebook-ads-scraper"
+  results_per_competitor: 5      # per search URL; ~5 while testing, ~20 for real runs
+  max_total_charge_usd: 0.50     # hard spend cap per run, passed to Apify
+  run_timeout_seconds: 600
+  max_in_brief: 3
+  ad_text_max_chars: 600         # text sent to the Ads Analyst per ad
+  fallback_search_url: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=EG&media_type=all"
+  competitors:
+    # Chipsy & Doritos advertise in Egypt via the PepsiCo Egypt page (their own pages had 0 active ads, Oct 2026),
+    # so they use keyword searches (English + Arabic) filtered to official page names.
+    - name: Chipsy
+      pages: ["PepsiCo Egypt", "Chipsy"]
+      ad_library_url: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=EG&media_type=all&q=%22chipsy%22&search_type=keyword_exact_phrase"
+    - name: Chipsy
+      pages: ["PepsiCo Egypt", "Chipsy"]
+      ad_library_url: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=EG&media_type=all&q=%22%D8%B4%D9%8A%D8%A8%D8%B3%D9%8A%22&search_type=keyword_exact_phrase"
+    - name: Doritos
+      pages: ["PepsiCo Egypt", "Doritos"]
+      ad_library_url: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=EG&media_type=all&q=%22doritos%22&search_type=keyword_exact_phrase"
+    - name: Doritos
+      pages: ["PepsiCo Egypt", "Doritos"]
+      ad_library_url: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=EG&media_type=all&q=%22%D8%AF%D9%88%D8%B1%D9%8A%D8%AA%D9%88%D8%B3%22&search_type=keyword_exact_phrase"
+    # Lion has its own Egypt page (facebook.com/LionEG)
+    - name: Lion
+      pages: ["Lion"]
+      ad_library_url: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=EG&media_type=all&search_type=page&view_all_page_id=547487301971422"
+# --- Google Trends (via SerpApi engine=google_trends) ---
+trends:
+  date_range: "today 3-m"        # Google Trends "past 90 days" (daily points)
+  period_label: "Past 90 days"
+  main_term: "شيبسي"             # drawn in yellow on the chart
+  chart_terms: ["شيبسي", "دوريتوس", "شيبس ليون"]   # chart shows the 3 competitors only
+  terms:                          # max 5 (one TIMESERIES call)
+    - "شيبس"
+    - "شيبسي"
+    - "دوريتوس"
+    - "شيبس ليون"                 # "ليون" alone mostly means Lyon (city / football club)
+    - "سناكس"
+  related_queries_for:            # one RELATED_QUERIES call each (each = 1 SerpApi search)
+    - "شيبس"
+    - "شيبسي"
+  rising_per_term: 5
+  min_points_per_week: 4          # fewer numeric (>=1) daily points in a 7-day window => "insufficient data"
+  min_avg_for_change: 5           # both weekly averages below this => change is noise => "insufficient data"
+# --- LLM agents ---
+llm:
+  model: "openai:gpt-4o"
+  temperature: 0.2
+
+# --- Delivery ---
+email:
+  subject_prefix: "Koshk Weekly Brief"   # recipients come from env BRIEF_RECIPIENTS
+
+# --- Retries for temporary errors (collectors + LLM) ---
+retry:
+  attempts: 2                     # retries after the first try
+  backoff_seconds: 2              # 2s, then 4s
+
+pricing:            # checked 2026-10-17; update if providers change prices
+  openai_gpt_4o: {input_per_1m: 2.50, output_per_1m: 10.00}   # prices for llm.model (now gpt-4o) — check openai.com/api/pricing
+  apify_ads_per_1000: 5.80        # Apify Free plan price for apify/facebook-ads-scraper
+  serpapi_per_search: 0.0         # within free plan quota
