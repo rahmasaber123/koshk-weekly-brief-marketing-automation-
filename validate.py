@@ -194,8 +194,7 @@ def code_ads_facts(raw_ads: list[dict], max_n: int = 3) -> list[dict]:
     """Most recent ad per competitor whose page name contains the brand name. Facts only, no interpretation."""
     picked: list[dict] = []
     for a in sorted(raw_ads, key=lambda x: x.get("start_date", ""), reverse=True):
-        brand_match = a["competitor"].lower() in (a.get("page_name") or "").lower()
-        if brand_match and all(p["competitor"] != a["competitor"] for p in picked):
+        if all(p["competitor"] != a["competitor"] for p in picked):   # collector already kept official pages only
             text = a.get("ad_text") or "(no ad text)"
             picked.append({**a, "message_fact": text[:140] + ("…" if len(text) > 140 else ""),
                            "interpretation": None, "relevance_reason": "code fallback (AI unavailable)"})
