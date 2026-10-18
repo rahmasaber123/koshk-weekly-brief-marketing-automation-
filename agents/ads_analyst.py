@@ -25,7 +25,8 @@ Task: pick up to 3 ads that tell Koshk the most about what competitors are doing
   angle is NOT "Koshk should talk about its sourcing" — it's a different moment, tone or audience).
   No product, packaging or pricing advice. Read numbers carefully: "5-pound bag" means a price of 5 EGP.
 - Write in English; you may quote a short Arabic phrase from the ad.
-- If no ad is relevant, return an empty list and explain in `note`.
+- Every ad comes from a competitor's official page, so it is relevant. If several ads repeat the same
+  message, pick one of them. Return an empty list only if there are no ads.
 """
 
 

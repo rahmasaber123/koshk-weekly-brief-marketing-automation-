@@ -71,7 +71,9 @@ def run_ads_agent(ads_r: SourceResult, tracker: CostTracker, drops: list, ai_err
         analysis = analyse_ads(ads_r, tracker)
         items = validate_ads(analysis, raw, drops, load_config()["ads"]["max_in_brief"])
         note = analysis.note if len(items) < 3 else None
-        return items, note or (None if items else "no relevant active ads found")
+        if not items:   # official-page ads exist, so never show an empty section
+            return code_ads_facts(raw), "Facts only: the AI picked no ads this week."
+        return items, note
     except Exception as e:
         ai_errors.append(str(e))
         return code_ads_facts(raw), "AI step unavailable — showing the most recent ad per brand, facts only."
