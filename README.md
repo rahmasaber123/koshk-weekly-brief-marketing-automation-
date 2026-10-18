@@ -2,17 +2,27 @@
 
 Every Monday at 09:00 Cairo this produces a one-page brief for Koshk, a fictional Egyptian snack brand. The brief covers:
 - what Chipsy, Doritos and Lion are running in the Meta Ad Library (Egypt, active ads)
-- what Egypt is searching on Google Trends (Arabic terms)
+- what Egypt is searching on Google Trends (Arabic and Latin spellings)
 - three content ideas, each linked to a specific ad or finding
 
 The brief is emailed, saved to `output/` (HTML + PDF) and kept as a GitHub Actions artifact.
 
 **Code collects and writes the facts. AI only picks and interprets. Every AI output is checked against the collected data.**
 
+## Submission at a glance
+| Required | Where |
+|---|---|
+| Workflow / code | This repo; the workflow is `.github/workflows/weekly-brief.yml` |
+| Setup instructions | [Setup](#setup) below |
+| No passwords or API keys | Keys live only in GitHub Secrets or a local `.env` (git-ignored); see `.env.example` |
+| One real, dated brief | [`sample_brief/`](sample_brief/), produced by the GitHub Actions run, unedited |
+| Write-up (how it works, cost, what breaks, time) | [`WRITEUP.md`](WRITEUP.md) |
+| Live runs | *Actions* tab; every run keeps its brief as an artifact for 90 days |
+
 ```
 GitHub Actions (Mon 06:00 UTC) or "Run workflow"
  → collectors/ads.py      Apify actor apify/facebook-ads-scraper → official competitor pages only → images saved
- → collectors/trends.py   SerpApi Google Trends (EG): 5 Arabic terms, 90 days + rising queries
+ → collectors/trends.py   SerpApi Google Trends (EG): Arabic + Latin brand terms, 90 days + rising queries
                            → code computes week-over-week changes and writes candidate facts (C1…Cn)
  → agents/                Ads Analyst · Trends Analyst (picks candidates) · Content Strategist   (PydanticAI, gpt-4o)
  → validate.py            drops unknown IDs, invented numbers, ideas naming competitors; asks the model to fix, then drops
@@ -39,6 +49,9 @@ GitHub Actions (Mon 06:00 UTC) or "Run workflow"
 - **Competitors.** Each competitor has Ad Library search URLs (Egypt, active) plus the official page names to keep. Chipsy and Doritos advertise via **PepsiCo Egypt**; Lion via its **LionEG** page.
 - **Trends.** The search terms, which terms appear on the chart, and the low-data thresholds.
 - **LLM.** The model and temperature. **Pricing:** per-provider prices used by the cost log.
+
+## Cost
+About $0.14 per run, about $0.60 per month: Apify about $0.12 per run (inside the free $5 monthly credit), SerpApi $0 (3 of the free monthly searches), OpenAI gpt-4o about $0.02, GitHub Actions and Gmail free. Every run logs its actual cost to `output/cost_history.csv`; details in `WRITEUP.md`.
 
 ## What stays manual
 Choosing competitors, page names and search terms; checking prices; reviewing ideas before posting (audience and timing are suggestions); optionally filling `manual_inputs/*.csv` if a source is down for a long time (see `manual_inputs/README.md`).
