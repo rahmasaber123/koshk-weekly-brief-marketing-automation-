@@ -22,6 +22,7 @@ DENSITY = [(9.0, 38.0), (8.6, 32.0), (8.2, 27.0), (7.8, 23.0), (7.4, 19.0)]   # 
 
 
 def week_label(d: datetime) -> str:
+    d = d - timedelta(days=1)   # label the week the data covers: a Monday run reports the week that just ended
     mon = d - timedelta(days=d.weekday())
     sun = mon + timedelta(days=6)
     span = (f"{mon.day}–{sun.day} {sun:%b %Y}" if mon.month == sun.month
