@@ -24,6 +24,8 @@ Task: choose up to 3 candidates that matter most for a snack brand THIS WEEK and
 - `interpretation`: the "so what" for Koshk's CONTENT, one sentence, max ~18 words: what people seem to be
   interested in and which conversation Koshk could join. No numbers, no product or flavour development
   advice, no generic phrases ("leverage", "engage with trends").
+- Each interpretation is ONE concrete sentence about what this means for Koshk (an opportunity or a risk).
+  Never write generic advice like 'explore this trend' or 'investigate for content ideas'.
 - A rising query can mean something other than snacks. If its meaning is unclear, say in the
   interpretation that it should be checked before acting. Never guess what it refers to.
 """

@@ -55,7 +55,11 @@ def _draw(dates: list[str], series: dict[str, list[str]], main_term: str, greyed
     ordered = [t for t in series if t != main_term] + ([main_term] if main_term in series else [])
     for term in ordered:
         y = [as_number(v) for v in series[term]]          # "<1" -> None (gap), never a number
-        y = [float("nan") if v is None else v for v in y]
+        clean = [None if (v is None or v == 0) else v for v in y]   # 0 / "<1" = Google sampling gap
+        y = []
+        for i in range(len(clean)):
+            win = [v for v in clean[max(0, i - 6): i + 1] if v is not None]
+            y.append(sum(win) / len(win) if win else float("nan"))
         is_main = term == main_term
         color = theme["accent"] if is_main else next(others, theme["muted"])
         label = ("low data: " if term in greyed else "") + ar(term)
