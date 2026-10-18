@@ -23,6 +23,6 @@ That's ≈$0.14 per run, or **≈$0.60/month** at 4.33 runs. GitHub Actions uses
 - **Schedule:** GitHub cron can start late, and is paused after 60 days of repo inactivity. The weekly cost commit keeps it active. Ubuntu is pinned to 24.04.
 - **Data reality:** Doritos had no active Egypt ads during collection. The brief says so instead of padding. Isolated zero days in Trends are Google sampling gaps. Lion has no distinctive search term ("ليون"/"lion" mostly mean Lyon or the animal), so it is tracked through ads only; Chipsy and Doritos are tracked in both Arabic and Latin spelling.
 
-**Reference video:** [watched / not watched — one line on what was adopted or rejected and why].
+**Reference video:** Watched. Adopted the core idea: an automated pipeline that turns research into a ready-to-read brief. Rejected tools that need paid plans or don't cover Egypt, and letting AI do the research end to end: here code collects and checks every fact and AI only interprets, because accuracy carries the most weight.
 
-**Time:** core pipeline ≈ [X] h; extra time went on data-quality fixes (unofficial advertisers in keyword results, noisy rising queries, Windows setup).
+**Time:** ~6 hours in total, 1 hour over the guide. The extra time went on accuracy fixes found in the first real runs (unofficial advertisers in keyword results, noisy rising queries, Windows setup), which I prioritised over new features.
