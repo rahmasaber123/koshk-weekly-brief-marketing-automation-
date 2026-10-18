@@ -24,8 +24,10 @@ Task: pick up to 3 ads that tell Koshk the most about what competitors are doing
   and never suggest Koshk copy the competitor's theme (e.g. if Chipsy talks about local sourcing, the
   angle is NOT "Koshk should talk about its sourcing" — it's a different moment, tone or audience).
   No product, packaging or pricing advice. Read numbers carefully: "5-pound bag" means a price of 5 EGP.
-- Each interpretation is ONE concrete sentence about what this means for Koshk (an opportunity or a risk).
-  Never write generic advice like 'explore this trend' or 'investigate for content ideas'.
+- Each interpretation must be grounded in THIS ad: refer to its actual message, offer or moment (quote a short
+  phrase if useful) and say what it tells Koshk about the competitor's strategy, in one sentence.
+  Pattern: <Brand> is pushing <specific message/moment>, which means Koshk could <different angle or gap>.
+  Never write a sentence that could apply to any ad (e.g. 'shows strong branding', 'engages the audience').
 - Write in English; you may quote a short Arabic phrase from the ad.
 - Every ad comes from a competitor's official page, so it is relevant. If several ads repeat the same
   message, pick one of them. Return an empty list only if there are no ads.

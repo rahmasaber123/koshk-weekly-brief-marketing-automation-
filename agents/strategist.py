@@ -27,6 +27,11 @@ Rules:
 - Don't build an idea on a rising query or term whose meaning the findings say is unclear.
 - Each idea must start from its evidence: the moment, audience, topic or search interest named in the
   ads/findings it cites. If the evidence doesn't point to a clear angle, return fewer ideas.
+- Each idea must be strategic and specific to THIS week's evidence: `why_now` names the exact query (quoted
+  in Arabic) or the competitor's actual message it reacts to, and the gap Koshk fills.
+  Pattern: <evidence> shows <what people want / what the competitor claims>, so Koshk owns <a different
+  moment, mood or audience>. Never propose an idea any snack brand could post any week (e.g. 'share your
+  snack story', 'try something new', 'how do you eat your snacks').
 - `title`: what the post is, max ~8 words, English.
 - `hook_ar`: a ready-to-use opening line in Egyptian colloquial Arabic (عامية مصرية), casual and
   conversational, as young Egyptians type on social media — not formal Arabic (فصحى), not a translated
