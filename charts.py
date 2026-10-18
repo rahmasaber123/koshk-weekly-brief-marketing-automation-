@@ -96,7 +96,7 @@ def make_charts(trends_data: dict) -> dict[str, str] | None:
         series = {t: v for t, v in series.items() if t in chart_terms} or series
     family = _register_fonts()
     greyed = {t for t, s in (trends_data.get("summary") or {}).items() if s.get("status") != "ok"}
-    series = {t: v for t, v in series.items() if t not in greyed} or series   # low data: left out, not drawn
+    greyed = set()   # draw every competitor; a low line simply means low interest
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     paths = {}
     for name, theme in THEMES.items():

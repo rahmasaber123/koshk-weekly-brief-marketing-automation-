@@ -112,7 +112,7 @@ def plan_problem(plan: ContentPlan) -> str | None:
     if not problems:
         return None
     return ("Fix these ideas: " + "; ".join(problems) + ". Koshk's posts must not name competitors and must not "
-            "assume anything about Koshk's own product. Drop an idea rather than break these rules.")
+            "assume anything about Koshk's own product. Rewrite those ideas so they follow the rules, and keep the same number of ideas.")
 
 
 def ads_problem(analysis: AdsAnalysis) -> str | None:

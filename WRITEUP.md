@@ -2,7 +2,7 @@
 
 **How it works.** A GitHub Actions schedule runs every Monday at 09:00 Cairo. It can also be started by hand. Python collectors gather the facts:
 - **Ads:** active ads in Egypt from the Meta Ad Library, via Apify. Only ads from the brands' official pages are kept: PepsiCo Egypt for Chipsy/Doritos, and LionEG. Images are saved at collection time.
-- **Trends:** Google Trends for Egypt via SerpApi: five Arabic terms (chips, Chipsy, Doritos, Lion as «شيبس ليون», snacks) over 90 days, plus rising related queries. Unrelated rising queries are filtered out. Terms with too little data are left out of the brief.
+- **Trends:** Google Trends for Egypt via SerpApi: competitor terms only (Chipsy and Doritos in Arabic and Latin spelling, Lion as «شيبس ليون») over 90 days, plus rising related queries that mention a competitor; everything else is filtered out. Terms with too little data are left out of the brief.
 
 Code then computes week-over-week changes and **writes every trend fact**. Three AI agents (PydanticAI, gpt-4o, temperature 0.2) only choose and interpret: which ads matter, which facts matter, and three content ideas that must cite an ad (A#) or finding (F#). A validator drops anything not backed by the data and logs it. The brief separates **facts** from **"So what:"** interpretation, shows source links, collection date, geo (EG) and each finding's date window, and notes that Trends scores are relative interest, not volumes.
 

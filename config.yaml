@@ -36,14 +36,15 @@ trends:
   main_term: "شيبسي"             # drawn in yellow on the chart
   chart_terms: ["شيبسي", "دوريتوس", "شيبس ليون"]   # chart shows the 3 competitors only
   terms:                          # max 5 (one TIMESERIES call)
-    - "شيبس"
+    - "شيبسي"
+    - "chipsy"
+    - "دوريتوس"
+    - "doritos"
+    - "شيبس ليون"                 # "ليون" alone mostly means Lyon (city / football club)
+  related_queries_for:            # one RELATED_QUERIES call each (each = 1 SerpApi search)
     - "شيبسي"
     - "دوريتوس"
-    - "شيبس ليون"                 # "ليون" alone mostly means Lyon (city / football club)
-    - "سناكس"
-  related_queries_for:            # one RELATED_QUERIES call each (each = 1 SerpApi search)
-    - "شيبس"
-    - "شيبسي"
+    - "شيبس ليون"
   rising_per_term: 5
   min_points_per_week: 4          # fewer numeric (>=1) daily points in a 7-day window => "insufficient data"
   min_avg_for_change: 10          # weekly averages below this are too small to call a change

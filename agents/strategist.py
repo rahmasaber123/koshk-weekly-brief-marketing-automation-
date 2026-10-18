@@ -61,5 +61,12 @@ def build_payload(valid_ads: list[dict], valid_findings: list[dict], gaps: list[
 def plan_content(valid_ads: list[dict], valid_findings: list[dict], gaps: list[str],
                  tracker: Any = None, model: Any = None) -> ContentPlan:
     from validate import plan_problem
+    need = min(3, len(valid_ads) + len([f for f in valid_findings if not f.get("greyed")]))
+
+    def check(plan: ContentPlan) -> str | None:
+        if len(plan.ideas) < need:
+            return (f"Return {need} ideas, not {len(plan.ideas)}: there is enough evidence. Each idea can cite a "
+                    "different ad or finding, or take a clearly different angle on the same one.")
+        return plan_problem(plan)
     return run_agent("strategist", SYSTEM_PROMPT, ContentPlan,
-                     build_payload(valid_ads, valid_findings, gaps), tracker, model, check=plan_problem)
+                     build_payload(valid_ads, valid_findings, gaps), tracker, model, check=check)
