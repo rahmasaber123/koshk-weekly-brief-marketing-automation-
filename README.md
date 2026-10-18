@@ -2,7 +2,7 @@
 
 Every Monday at 09:00 Cairo this produces a one-page brief for Koshk, a fictional Egyptian snack brand. The brief covers:
 - what Chipsy, Doritos and Lion are running in the Meta Ad Library (Egypt, active ads)
-- what Egypt is searching on Google Trends (Arabic and Latin spellings)
+- what Egypt is searching on Google Trends (Arabic terms)
 - three content ideas, each linked to a specific ad or finding
 
 The brief is emailed, saved to `output/` (HTML + PDF) and kept as a GitHub Actions artifact.
@@ -22,7 +22,7 @@ The brief is emailed, saved to `output/` (HTML + PDF) and kept as a GitHub Actio
 ```
 GitHub Actions (Mon 06:00 UTC) or "Run workflow"
  → collectors/ads.py      Apify actor apify/facebook-ads-scraper → official competitor pages only → images saved
- → collectors/trends.py   SerpApi Google Trends (EG): Arabic + Latin brand terms, 90 days + rising queries
+ → collectors/trends.py   SerpApi Google Trends (EG): 5 Arabic terms, 90 days + rising queries
                            → code computes week-over-week changes and writes candidate facts (C1…Cn)
  → agents/                Ads Analyst · Trends Analyst (picks candidates) · Content Strategist   (PydanticAI, gpt-4o)
  → validate.py            drops unknown IDs, invented numbers, ideas naming competitors; asks the model to fix, then drops

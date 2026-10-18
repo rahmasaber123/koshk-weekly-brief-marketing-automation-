@@ -130,7 +130,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
         <div class="top"><span class="brandname">{{ a.brand }}</span><span class="tag">{{ a.id }} · since {{ a.start_date }}</span></div>
         <p>{{ a.fact|ar }}</p>
         {% if a.interpretation %}<p><span class="so">So what:</span> {{ a.interpretation|ar }}</p>
-        {% else %}<p class="unavailable"><span class="so">So what:</span> unavailable (AI step failed)</p>{% endif %}
+        {% else %}<p class="unavailable"><span class="so">So what:</span> facts only this week</p>{% endif %}
         <a class="link" href="{{ a.link }}">View ad ↗</a>
       </div>
     {% endfor %}
@@ -163,9 +163,6 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
       </div>
       {% else %}
       <div class="finding greyed"><p>No findings passed validation this week.</p></div>
-      {% endfor %}
-      {% for t in trends.insufficient %}
-      <div class="finding greyed"><p><span class="fid">—</span><bdi lang="ar">{{ t.term }}</bdi> · not enough search data this week</p></div>
       {% endfor %}
     </div>
   </div>

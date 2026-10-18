@@ -60,6 +60,15 @@ def _collect(cfg: dict, tracker: Any) -> SourceResult:
             if tracker is not None:
                 tracker.mark_apify_attempted()
             run, items = with_retry(lambda: _apify_run(cfg), "ads:apify")
+            missing = _missing(items, cfg)
+            if missing:
+                log.info(f"[ads] no ads for {[c['name'] for c in missing]}; retrying those once")
+                try:
+                    run2, items2 = _apify_run(cfg, missing)
+                    items = items + items2
+                    run = {**run, "usageTotalUsd": (run.get("usageTotalUsd") or 0) + (run2.get("usageTotalUsd") or 0)}
+                except (PermanentError, TransientError) as e:
+                    log.warning(f"[ads] retry for missing competitors failed: {e}")
             save_fixture(ITEMS_FIXTURE, items)
             save_fixture(RUN_FIXTURE, _run_cost_fields(run))
             source = "apify"
@@ -94,11 +103,20 @@ def _headers() -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _apify_run(cfg: dict) -> tuple[dict, list[dict]]:
+def _missing(items: list[dict], cfg: dict) -> list[dict]:
+    """Competitor entries with no active official-page ad in this batch."""
+    found = {_competitor_for(i, cfg) for i in items
+             if i.get("isActive") is not False and _official_page(i, i.get("snapshot") or {}, cfg)}
+    names = {c["name"] for c in cfg["ads"]["competitors"]} - found
+    return [c for c in cfg["ads"]["competitors"] if c["name"] in names]
+
+
+def _apify_run(cfg: dict, competitors: list[dict] | None = None) -> tuple[dict, list[dict]]:
     acfg = cfg["ads"]
-    n_urls = len(acfg["competitors"])
+    competitors = competitors or acfg["competitors"]
+    n_urls = len(competitors)
     run_input = {
-        "startUrls": [{"url": c["ad_library_url"]} for c in acfg["competitors"]],
+        "startUrls": [{"url": c["ad_library_url"]} for c in competitors],
         "resultsLimit": int(acfg["results_per_competitor"]),   # per URL
         "activeStatus": "active",
         "isDetailsPerAd": False,
