@@ -9,5 +9,5 @@ weasyprint==70.0
 matplotlib==3.11.2          # >=3.11 shapes Arabic natively; charts.py falls back to reshaper+bidi on older
 arabic-reshaper==3.0.1
 python-bidi==0.6.11
-Pillow>=10                  # only for tests/make_sample_fixtures.py (already a matplotlib dependency)
+Pillow>=10                  # matplotlib dependency
 tzdata>=2024.1

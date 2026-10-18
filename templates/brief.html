@@ -117,7 +117,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
 <section>
   <h2><span class="num">01</span>What competitors are running</h2>
   {% if ads.status == "gap" %}
-    <div class="gapbox"><strong>Competitor ads couldn't be collected this week.</strong>
+    <div class="gapbox"><strong>Competitor ads couldn't be collected this week.</strong> {{ ads.reason|ar }}.
       <a href="{{ ads.search_url }}">Open the Ad Library (Egypt, active) ↗</a></div>
   {% elif not ads["items"] %}
     <div class="gapbox"><strong>No relevant active ads found.</strong> {{ (ads.note or "")|ar }}
@@ -143,7 +143,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
 <section>
   <h2><span class="num">02</span>What Egypt is searching</h2>
   {% if trends.status == "gap" %}
-    <div class="gapbox"><strong>Search trends couldn't be collected this week.</strong>
+    <div class="gapbox"><strong>Search trends couldn't be collected this week.</strong> {{ trends.reason|ar }}.
       <a href="{{ trends.url }}">Open Google Trends (Egypt) ↗</a></div>
   {% else %}
   <div class="trends">
@@ -173,7 +173,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
 <section>
   <h2><span class="num">03</span>What Koshk should post</h2>
   {% if not ideas.available %}
-    <div class="gapbox"><strong>Content ideas unavailable this week.</strong> The facts above are unaffected.</div>
+    <div class="gapbox"><strong>Content ideas unavailable this week.</strong> {{ (ideas.reason or "")|ar }}</div>
   {% elif not ideas["items"] %}
     <div class="gapbox"><strong>No ideas met the evidence bar this week.</strong> {{ (ideas.note or "")|ar }}</div>
   {% else %}

@@ -4,7 +4,7 @@ timezone: Africa/Cairo
 # --- Meta Ad Library (via Apify actor apify/facebook-ads-scraper) ---
 ads:
   actor_id: "apify~facebook-ads-scraper"
-  results_per_competitor: 5      # per search URL; ~5 while testing, ~20 for real runs
+  results_per_competitor: 5      # per search URL; 5 URLs -> up to 25 ads per run
   max_total_charge_usd: 0.50     # hard spend cap per run, passed to Apify
   run_timeout_seconds: 600
   max_in_brief: 3

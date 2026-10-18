@@ -11,9 +11,9 @@ on:
         options: ["", "ads", "trends", "llm"]
         default: ""
       use_fixtures:
-        description: "Use saved fixtures instead of calling Apify/SerpApi ('' | 1 | sample)"
+        description: "Use saved fixtures instead of calling Apify/SerpApi ('' | 1)"
         type: choice
-        options: ["", "1", "sample"]
+        options: ["", "1"]
         default: ""
 
 permissions:
