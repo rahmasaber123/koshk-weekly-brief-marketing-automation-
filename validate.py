@@ -69,7 +69,7 @@ def validate_findings(analysis: TrendsAnalysis, trends_data: dict, drops: list[d
             _drop(drops, "finding", p.candidate_id, "candidate_id not in collected data")
         elif any(o["candidate_id"] == c["id"] for o in out):
             _drop(drops, "finding", p.candidate_id, "duplicate candidate")
-        elif _nums_in(p.interpretation):
+        elif [x for x in _nums_in(p.interpretation) if x not in _nums_in(c["fact"])]:
             _drop(drops, "finding", p.candidate_id, f"interpretation adds numbers: {_nums_in(p.interpretation)}")
         else:
             out.append({**c, "candidate_id": c["id"], "interpretation": p.interpretation, "greyed": False})
