@@ -25,4 +25,4 @@ That's ≈$0.14 per run, or **≈$0.60/month** at 4.33 runs. GitHub Actions uses
 
 **Reference video:** Watched. Adopted the core idea: an automated pipeline that turns research into a ready-to-read brief. Rejected tools that need paid plans or don't cover Egypt, and letting AI do the research end to end: here code collects and checks every fact and AI only interprets, because accuracy carries the most weight.
 
-**Time:** ~6 hours in total, 1 hour over the guide. The extra time went on accuracy fixes found in the first real runs (unofficial advertisers in keyword results, noisy rising queries, Windows setup), which I prioritised over new features.
+**Time: ~5 hours in total. ≈1.5 h on collectors (Apify ads, SerpApi trends) and config; ≈1.5 h on the AI agents and validation; ≈1 h on the one-page brief, chart and email; ≈1 h on accuracy fixes found in the first real runs (unofficial advertisers in keyword results, noisy rising queries) and GitHub Actions setup.
