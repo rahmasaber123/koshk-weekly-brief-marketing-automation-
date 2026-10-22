@@ -2,7 +2,8 @@ name: Koshk weekly brief
 
 on:
   schedule:
-    - cron: "0 6 * * 1"          # Monday 06:00 UTC = 09:00 Cairo. GitHub may start scheduled runs late.
+  
+    - cron: "17 3 * * 1"
   workflow_dispatch:
     inputs:
       simulate_fail:
