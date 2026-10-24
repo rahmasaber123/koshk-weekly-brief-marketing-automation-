@@ -11,7 +11,7 @@ from email.utils import make_msgid
 import smtplib
 from pathlib import Path
 
-from config import OUTPUT_DIR
+from config import OUTPUT_DIR, load_config
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def _with_cids(html: str) -> tuple[str, list[tuple[str, bytes, str, str]]]:
         path = OUTPUT_DIR / src
         if not path.exists():
             continue
-        cid = make_msgid(domain="koshk.brief")
+        cid = make_msgid(domain="weekly.brief")
         html = html.replace(f'src="{src}"', f'src="cid:{cid[1:-1]}"')
         maintype, subtype = (mimetypes.guess_type(path.name)[0] or "image/jpeg").split("/")
         images.append((cid, path.read_bytes(), maintype, subtype))
@@ -43,7 +43,7 @@ def send_email(html_path: Path | None, pdf_path: Path | None, subject: str) -> d
     try:
         msg = EmailMessage()
         msg["Subject"], msg["From"], msg["To"] = subject, user, ", ".join(to)
-        msg.set_content("Koshk Weekly Brief attached as PDF. Open in an HTML-capable client to see it inline.")
+        msg.set_content(f"{load_config()['brand']['name']} Weekly Brief attached as PDF. Open in an HTML-capable client to see it inline.")
         if html_path and html_path.exists():
             html, images = _with_cids(html_path.read_text(encoding="utf-8"))
             msg.add_alternative(html, subtype="html")

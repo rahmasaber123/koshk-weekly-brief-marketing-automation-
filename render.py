@@ -15,7 +15,7 @@ import re
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from config import ASSETS_DIR, FONTS_DIR, OUTPUT_DIR, ROOT, TEMPLATES_DIR
+from config import ASSETS_DIR, FONTS_DIR, OUTPUT_DIR, ROOT, TEMPLATES_DIR, load_config
 
 log = logging.getLogger(__name__)
 DENSITY = [(9.0, 38.0), (8.6, 32.0), (8.2, 27.0), (7.8, 23.0), (7.4, 19.0)]   # (base font pt, ad image height mm)
@@ -55,6 +55,7 @@ def build_context(state: dict, mode: str, fs: float, img_h: float) -> dict[str, 
         "font_base": FONTS_DIR.resolve().as_uri() if mode == "pdf" else os.path.relpath(FONTS_DIR, OUTPUT_DIR),
         "logo": _src("assets/logo.png", mode) if logo.exists() else None,
         "synthetic": ads_r.synthetic or tr_r.synthetic,
+        "brand": load_config()["brand"]["name"],
         "week_label": week_label(state["run_time"]),
         "collected_label": state["run_time"].strftime("%d %b %Y %H:%M"),
         "statuses": [{"name": "Ads", "status": ads_r.status}, {"name": "Trends", "status": tr_r.status},

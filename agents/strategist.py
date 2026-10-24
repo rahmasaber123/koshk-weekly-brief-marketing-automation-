@@ -1,4 +1,4 @@
-"""Agent 3 — turns VALIDATED ads and findings into up to 3 content ideas for Koshk."""
+"""Agent 3 — turns VALIDATED ads and findings into up to 3 content ideas for the brand."""
 from __future__ import annotations
 
 from typing import Any
@@ -6,9 +6,9 @@ from typing import Any
 from agents.base import run_agent
 from agents.schemas import ContentPlan
 
-SYSTEM_PROMPT = """You are the Content Strategist for Koshk, a fictional Egyptian snack brand competing with
-Chipsy, Doritos and Lion. You receive this week's VALIDATED competitor ads (IDs like "A3") and Google Trends
-findings (IDs like "F2"). Propose up to 3 social content ideas for Koshk.
+SYSTEM_PROMPT = """You are the Content Strategist for {BRAND}, {BRAND_DESC} competing with
+{COMPETITORS}. You receive this week's VALIDATED competitor ads (IDs like "A3") and Google Trends
+findings (IDs like "F2"). Propose up to 3 social content ideas for {BRAND}.
 
 Ground truth vs opinion: `ad_text`, `fact` and `values` are collected data (ground truth). `interpretation`
 is an analyst's opinion — use it as a hint, but build each idea on the ground truth it cites.
@@ -18,20 +18,20 @@ Rules:
 - Return 3 ideas whenever the evidence supports 3, and spread them across ads AND trend findings (at least
   one idea should cite a trend finding "F#" when findings exist). Fewer only if the evidence is too thin.
 - These are CONTENT ideas (posts), not product, packaging or pricing advice.
-- Never adopt a competitor's theme for Koshk: if a competitor's ad is about heritage, local sourcing or
-  premium quality, Koshk's idea must take a different angle (moment, mood, audience), not the same theme.
-- Differentiate Koshk from competitors — react to what they do, never copy their ads or slogans, and never
-  name Chipsy, Doritos or Lion in Koshk's post (title or hook). Competitors are context, not the topic.
-- Koshk is fictional and new: NEVER mention or imply any Koshk flavour, new product, price, pack size, offer,
-  promotion, ingredient, origin or sourcing, and never claim people already know, love or ask about Koshk.
+- Never adopt a competitor's theme for {BRAND}: if a competitor's ad is about heritage, local sourcing or
+  premium quality, {BRAND}'s idea must take a different angle (moment, mood, audience), not the same theme.
+- Differentiate {BRAND} from competitors — react to what they do, never copy their ads or slogans, and never
+  name {COMPETITORS_OR} in {BRAND}'s post (title or hook). Competitors are context, not the topic.
+- {BRAND} is fictional and new: NEVER mention or imply any {BRAND} flavour, new product, price, pack size, offer,
+  promotion, ingredient, origin or sourcing, and never claim people already know, love or ask about {BRAND}.
 - Don't build an idea on a rising query or term whose meaning the findings say is unclear.
 - Each idea must start from its evidence: the moment, audience, topic or search interest named in the
   ads/findings it cites. If the evidence doesn't point to a clear angle, return fewer ideas.
 - Each idea must be strategic and specific to THIS week's evidence: `why_now` names the exact query (quoted
-  in Arabic) or the competitor's actual message it reacts to, and the gap Koshk fills.
-  Pattern: <evidence> shows <what people want / what the competitor claims>, so Koshk owns <a different
-  moment, mood or audience>. Never propose an idea any snack brand could post any week (e.g. 'share your
-  snack story', 'try something new', 'how do you eat your snacks').
+  in Arabic) or the competitor's actual message it reacts to, and the gap {BRAND} fills.
+  Pattern: <evidence> shows <what people want / what the competitor claims>, so {BRAND} owns <a different
+  moment, mood or audience>. Never propose an idea any {CATEGORY} brand could post any week (e.g. 'share your
+  {CATEGORY} story', 'try something new', 'how do you eat your {CATEGORY_PLURAL}').
 - `title`: what the post is, max ~8 words, English.
 - `hook_ar`: a ready-to-use opening line in Egyptian colloquial Arabic (عامية مصرية), casual and
   conversational, as young Egyptians type on social media — not formal Arabic (فصحى), not a translated
@@ -54,7 +54,10 @@ def build_payload(valid_ads: list[dict], valid_findings: list[dict], gaps: list[
            for a in valid_ads]
     findings = [{k: f.get(k) for k in ("finding_id", "term", "fact", "values", "period", "interpretation")}
                 for f in valid_findings if not f.get("greyed")]
-    return {"brand": "Koshk (fictional Egyptian snack brand; no known flavours, prices or promotions)",
+    from config import load_config
+    b = load_config()["brand"]
+    desc = b["description"].removeprefix("a ").removeprefix("an ")
+    return {"brand": f"{b['name']} ({desc}; no known flavours, prices or promotions)",
             "market": "Egypt", "ads": ads, "findings": findings, "data_gaps_this_week": gaps}
 
 

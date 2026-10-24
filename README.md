@@ -46,6 +46,7 @@ GitHub Actions (Mon 06:00 UTC) or "Run workflow"
 **Failure demo:** in *Run workflow*, set `simulate_fail` to `ads`, `trends` or `llm` (or set `SIMULATE_FAIL` locally). The brief still renders and reports the gap.
 
 ## Configuration (`config.yaml`)
+- **Brand.** Name, short description and category. The AI prompts, the brief, the email and its subject all read it from here.
 - **Competitors.** Each competitor has Ad Library search URLs (Egypt, active) plus the official page names to keep. Chipsy and Doritos advertise via **PepsiCo Egypt**; Lion via its **LionEG** page.
 - **Trends.** The search terms, which terms appear on the chart, and the low-data thresholds.
 - **LLM.** The model and temperature. **Pricing:** per-provider prices used by the cost log.

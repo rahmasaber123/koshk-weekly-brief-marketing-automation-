@@ -1,6 +1,13 @@
 geo: EG
 timezone: Africa/Cairo
 
+# --- The brand this brief is for: change it here, nowhere else ---
+brand:
+  name: "Koshk"
+  description: "a fictional Egyptian snack brand"   # how the AI agents introduce the brand
+  category: "snack"              # used as "<category> brand"
+  category_plural: "snacks"
+
 # --- Meta Ad Library (via Apify actor apify/facebook-ads-scraper) ---
 ads:
   actor_id: "apify~facebook-ads-scraper"
@@ -54,8 +61,7 @@ llm:
   temperature: 0.2
 
 # --- Delivery ---
-email:
-  subject_prefix: "Koshk Weekly Brief"   # recipients come from env BRIEF_RECIPIENTS
+# subject = "<brand name> Weekly Brief · <week>"; recipients come from env BRIEF_RECIPIENTS
 
 # --- Retries for temporary errors (collectors + LLM) ---
 retry:

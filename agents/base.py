@@ -24,6 +24,21 @@ Hard rules:
 """
 
 
+def fill_brand(text: str) -> str:
+    """Fill {BRAND}, {COMPETITORS}, ... in a prompt from config.yaml (brand + competitor names)."""
+    cfg = load_config()
+    b = cfg["brand"]
+    names = list(dict.fromkeys(c["name"] for c in cfg["ads"]["competitors"]))
+
+    def join(word: str) -> str:
+        return names[0] if len(names) == 1 else ", ".join(names[:-1]) + f" {word} " + names[-1]
+    for key, value in {"{BRAND_DESC}": b["description"], "{BRAND}": b["name"], "{CATEGORY_PLURAL}": b["category_plural"],
+                       "{CATEGORY}": b["category"], "{COMPETITORS_OR}": join("or"), "{COMPETITORS}": join("and"),
+                       "{FIRST_COMPETITOR}": names[0]}.items():
+        text = text.replace(key, value)
+    return text
+
+
 class LLMUnavailable(Exception):
     """LLM down, key missing, or output invalid after the retry."""
 
@@ -41,7 +56,7 @@ def run_agent(name: str, system_prompt: str, output_type: type[T], payload: dict
     cfg = load_config()["llm"]
     if model is None and not os.getenv("OPENAI_API_KEY"):
         raise LLMUnavailable("OPENAI_API_KEY not set")
-    agent = Agent(model or cfg["model"], output_type=output_type, system_prompt=system_prompt + COMMON_RULES,
+    agent = Agent(model or cfg["model"], output_type=output_type, system_prompt=fill_brand(system_prompt) + COMMON_RULES,
                   model_settings={"temperature": cfg["temperature"]}, retries=2, name=name)
     if check is not None:
         @agent.output_validator

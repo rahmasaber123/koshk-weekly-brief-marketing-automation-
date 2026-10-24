@@ -174,7 +174,7 @@ def _parse_related(raw: dict, limit: int, keep_words: list[str] | None = None) -
         log.info(f"[trends] filtered out {len(dropped)} unrelated rising queries: {[d['query'] for d in dropped]}")
     if not kept:
         return {"status": "insufficient data", "items": [], "filtered_out": dropped,
-                "reason": "no snack-related rising queries" if rising else "no rising queries returned"}
+                "reason": f"no {load_config()['brand']['category']}-related rising queries" if rising else "no rising queries returned"}
     return {"status": "ok", "reason": None, "items": kept[:limit], "filtered_out": dropped}
 
 

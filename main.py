@@ -142,7 +142,7 @@ def main() -> int:
     step("cost_history", errors, lambda: tracker.append_history(run_time.strftime("%Y-%m-%d")))
 
     # 4. deliver (failure never fails the run)
-    subject = f"{cfg['email']['subject_prefix']} · {week_label(run_time)}"
+    subject = f"{cfg['brand']['name']} Weekly Brief · {week_label(run_time)}"
     email = step("email", errors, lambda: send_email(html_path, pdf_path, subject),
                  default={"status": "failed", "reason": "email step crashed"})
 

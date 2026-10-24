@@ -6,6 +6,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+from config import load_config
+
+_BRAND = load_config()["brand"]
+
 # ---------- Collector output ----------
 
 class SourceResult(BaseModel):
@@ -24,9 +28,9 @@ class SourceResult(BaseModel):
 
 class AdPick(BaseModel):
     ad_id: str = Field(description="Short ID from the input data, e.g. 'A3'. Must exist in the input.")
-    relevance_reason: str = Field(description="Why this ad matters for a snack brand in Egypt.")
+    relevance_reason: str = Field(description=f"Why this ad matters for a {_BRAND['category']} brand in Egypt.")
     message_fact: str = Field(description="FACT: what the ad says/shows. One line, no opinion.")
-    interpretation: str = Field(description="INTERPRETATION: the 'so what' for Koshk. One line.")
+    interpretation: str = Field(description=f"INTERPRETATION: the 'so what' for {_BRAND['name']}. One line.")
 
 
 class AdsAnalysis(BaseModel):
@@ -38,7 +42,7 @@ class AdsAnalysis(BaseModel):
 
 class TrendPick(BaseModel):
     candidate_id: str = Field(description="ID of a candidate fact from the input, e.g. 'C2'. Must exist.")
-    interpretation: str = Field(description="INTERPRETATION: the 'so what' for Koshk's content. One line.")
+    interpretation: str = Field(description=f"INTERPRETATION: the 'so what' for {_BRAND['name']}'s content. One line.")
 
 
 class TrendsAnalysis(BaseModel):

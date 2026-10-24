@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Koshk Weekly Brief · {{ week_label }}</title>
+<title>{{ brand }} Weekly Brief · {{ week_label }}</title>
 {% if mode == "html" %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -108,7 +108,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
 <header>
   {% if logo %}<img class="logo" src="{{ logo }}" alt="logo">{% endif %}
   <div class="titles">
-    <h1><span class="brand">Koshk</span> Weekly Brief{% if synthetic %}<span class="sample">SAMPLE DATA · NOT REAL</span>{% endif %}</h1>
+    <h1><span class="brand">{{ brand }}</span> Weekly Brief{% if synthetic %}<span class="sample">SAMPLE DATA · NOT REAL</span>{% endif %}</h1>
     <div class="meta">{{ week_label }} &nbsp;·&nbsp; Egypt · collected {{ collected_label }} Cairo</div>
   </div>
 </header>
@@ -171,7 +171,7 @@ footer { margin-top: 3.4mm; padding-top: 1.8mm; border-top: 1px solid var(--line
 
 <!-- 3. IDEAS -->
 <section>
-  <h2><span class="num">03</span>What Koshk should post</h2>
+  <h2><span class="num">03</span>What {{ brand }} should post</h2>
   {% if not ideas.available %}
     <div class="gapbox"><strong>Content ideas unavailable this week.</strong> {{ (ideas.reason or "")|ar }}</div>
   {% elif not ideas["items"] %}

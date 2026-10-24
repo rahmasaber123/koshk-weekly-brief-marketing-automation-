@@ -88,7 +88,8 @@ def insufficient_terms(trends_data: dict) -> list[dict]:
 # ---------------- ideas ----------------
 
 # No hand-written word lists: the only words checked come from config.yaml (the competitors you track).
-SELF_CLAIM_RE = re.compile(r"\bits own\b|koshk'?s own", re.I)   # AI assuming facts about fictional Koshk
+BRAND = load_config()["brand"]["name"]
+SELF_CLAIM_RE = re.compile(rf"\bits own\b|{re.escape(BRAND.lower())}'?s own", re.I)   # AI assuming facts about the brand
 
 
 def _competitor_words() -> list[str]:
@@ -101,9 +102,9 @@ def idea_problem(idea: Any) -> str | None:
     head = f"{idea.title} {idea.hook_ar}".lower()
     hit = next((w for w in _competitor_words() if re.search(rf"(?<!\w){re.escape(w.lower())}(?!\w)", head)), None)
     if hit:
-        return f"idea '{idea.title}' names a competitor ('{hit}') in Koshk's own post"
+        return f"idea '{idea.title}' names a competitor ('{hit}') in {BRAND}'s own post"
     if m := SELF_CLAIM_RE.search(f"{idea.title} {idea.why_now}"):
-        return f"idea '{idea.title}' assumes facts about Koshk itself ('{m.group(0)}')"
+        return f"idea '{idea.title}' assumes facts about {BRAND} itself ('{m.group(0)}')"
     return None
 
 
@@ -111,16 +112,16 @@ def plan_problem(plan: ContentPlan) -> str | None:
     problems = [p for p in (idea_problem(i) for i in plan.ideas) if p]
     if not problems:
         return None
-    return ("Fix these ideas: " + "; ".join(problems) + ". Koshk's posts must not name competitors and must not "
-            "assume anything about Koshk's own product. Rewrite those ideas so they follow the rules, and keep the same number of ideas.")
+    return ("Fix these ideas: " + "; ".join(problems) + f". {BRAND}'s posts must not name competitors and must not "
+            f"assume anything about {BRAND}'s own product. Rewrite those ideas so they follow the rules, and keep the same number of ideas.")
 
 
 def ads_problem(analysis: AdsAnalysis) -> str | None:
     bad = [f"{p.ad_id}: '{p.interpretation}'" for p in analysis.ads if SELF_CLAIM_RE.search(p.interpretation)]
     if not bad:
         return None
-    return ("These interpretations assume facts about Koshk's own product: " + "; ".join(bad) + ". Rewrite each "
-            "as a content angle that differs from the competitor, without assuming anything about Koshk.")
+    return (f"These interpretations assume facts about {BRAND}'s own product: " + "; ".join(bad) + ". Rewrite each "
+            f"as a content angle that differs from the competitor, without assuming anything about {BRAND}.")
 
 
 def validate_ideas(plan: ContentPlan, valid_ids: set[str], drops: list[dict], max_n: int = 3) -> list[dict]:
